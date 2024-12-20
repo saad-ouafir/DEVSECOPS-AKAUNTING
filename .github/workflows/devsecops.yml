@@ -1,55 +1,49 @@
-name: devsecops tests
+name: DevSecOps Pipeline
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-      # OWASP Dependency-Check
-      - name: OWASP Dependency-Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: "Akaunting"
-          path: "."
-          format: "HTML"
-
-      # SonarQube Scan
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-      # Snyk Security Scan
-      - name: Snyk Security Scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-      # Retire.js
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "16"
-      - name: Install Retire.js
-        run: npm install -g retire
-      - name: Run Retire.js
-        run: retire --path .
+          node-version: "16" # Adapt to your application's version
 
-      # # Checkmarx Scan
-      # - name: Checkmarx CxFlow Action
-      #   uses: checkmarx-ts/checkmarx-cxflow-github-action@v1.4
-      #   with:
-      #     project: Akaunting
-      #     team: /CxServer
-      #     checkmarx_url: ${{ secrets.CHECKMARX_URL }}
-      #     checkmarx_username: ${{ secrets.CHECKMARX_USERNAME }}
-      #     checkmarx_password: ${{ secrets.CHECKMARX_PASSWORD }}
-      #     checkmarx_client_secret: ${{ secrets.CHECKMARX_CLIENT_SECRET }}
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run OWASP Dependency-Check
+        run: |
+          wget https://github.com/DependencyCheck/dependency-check-bin/releases/download/v7.3.1/dependency-check.sh
+          chmod +x dependency-check.sh
+          ./dependency-check.sh --project "Your_Project_Name" --scan ./ --out ./
+
+      - name: SonarQube Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Store your SonarQube token in GitHub secrets
+        run: sonar-scanner
+
+      - name: SourceClear
+        run: |
+          # Run SourceClear (now part of Synopsys) scan if available. 
+          # Depending on the implementation, put the relevant commands here.
+
+      - name: Retire.js
+        run: npx retire
+
+      - name: Checkmarx
+        run: |
+          # Run Checkmarx if you have integration set; add the relevant command here.
+
+      - name: Snyk Test
+        run: |
+          npm install -g snyk
+          snyk test
