@@ -1,0 +1,55 @@
+name: devsecops tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # OWASP Dependency-Check
+      - name: OWASP Dependency-Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "Akaunting"
+          path: "."
+          format: "HTML"
+
+      # SonarQube Scan
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      # Snyk Security Scan
+      - name: Snyk Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Retire.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+      - name: Install Retire.js
+        run: npm install -g retire
+      - name: Run Retire.js
+        run: retire --path .
+
+      # # Checkmarx Scan
+      # - name: Checkmarx CxFlow Action
+      #   uses: checkmarx-ts/checkmarx-cxflow-github-action@v1.4
+      #   with:
+      #     project: Akaunting
+      #     team: /CxServer
+      #     checkmarx_url: ${{ secrets.CHECKMARX_URL }}
+      #     checkmarx_username: ${{ secrets.CHECKMARX_USERNAME }}
+      #     checkmarx_password: ${{ secrets.CHECKMARX_PASSWORD }}
+      #     checkmarx_client_secret: ${{ secrets.CHECKMARX_CLIENT_SECRET }}
