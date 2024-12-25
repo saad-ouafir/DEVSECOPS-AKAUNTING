@@ -13,4 +13,13 @@ use Livewire\Livewire;
     $base = request()->getBasePath();
 
     return Route::get($base . '/vendor/livewire/livewire/dist/livewire.min.js', $handle);
+    Route::get('/', function () {
+    return view('index');
+});
+
+Route::get('/register', function () {
+    return view('register');
+});
+
+Route::post('/register', 'Auth\RegisterController@register')->name('register');
 });

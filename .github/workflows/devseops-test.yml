@@ -1,0 +1,54 @@
+name: DevSecOps
+
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "7.4"
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: OWASP Dependency-Check
+        uses: dependency-check/action@v1
+        with:
+          project: "Akaunting"
+          format: "ALL"
+          output-directory: "./dependency-check-report"
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: .
+
+      - name: SourceClear Scan
+        run: |
+          curl -sSL https://download.sourceclear.com/ci.sh | bash
+
+      - name: Retire.js Scan
+        uses: retirejs/retire.js-action@v2
+
+      #   - name: Checkmarx Scan
+      #     uses: checkmarxdev/ast-cli-action@v1
+      #     with:
+      #       api-key:
+      #       project-name: "Akaunting"
+      #       source-location: "."
+
+      - name: Snyk Scan
+        uses: snyk/actions@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: monitor
