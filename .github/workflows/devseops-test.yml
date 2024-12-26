@@ -15,100 +15,99 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+#       - name: Setup PHP
+#         uses: shivammathur/setup-php@v2
+#         with:
+#           php-version: "8.1"
+#           extensions: mbstring, intl, curl, json, zip
+#           tools: composer:v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.1"
-          extensions: mbstring, intl, curl, json, zip
-          tools: composer:v2
+#       - name: Set up JDK
+#         uses: actions/setup-java@v3
+#         with:
+#           java-version: "17"
+#           distribution: "temurin"
+#       - name: Setup Database
+#         run: |
+#           php artisan install \
+#               --db-name="akaunting" \
+#               --db-username="root" \
+#               --db-password="root" \
+#               --admin-email="saad.16ouafir@gmail.com" \
+#               --admin-password="saad9090"
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: "17"
-          distribution: "temurin"
-      - name: Setup Database
-        run: |
-          php artisan install \
-              --db-name="akaunting" \
-              --db-username="root" \
-              --db-password="root" \
-              --admin-email="saad.16ouafir@gmail.com" \
-              --admin-password="saad9090"
+#       - name: Install Dependencies
+#         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+#       - name: OWASP Dependency Check
+#         uses: dependency-check/Dependency-Check_Action@main
+#         with:
+#           project: "Akaunting"
+#           path: "."
+#           format: "HTML"
+#           out: "reports"
+#           args: >
+#             --enableExperimental
+#             --scan .
+#             --failOnCVSS 7
 
-      - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        with:
-          project: "Akaunting"
-          path: "."
-          format: "HTML"
-          out: "reports"
-          args: >
-            --enableExperimental
-            --scan .
-            --failOnCVSS 7
+#       - name: Upload OWASP Results
+#         if: always()
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: dependency-check-report
+#           path: reports
 
-      - name: Upload OWASP Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: dependency-check-report
-          path: reports
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: "16"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16"
+#       - name: Install and Run Retire.js
+#         run: |
+#           npm install -g retire
+#           retire --outputformat json --outputpath retire-results.json --severity high || true
 
-      - name: Install and Run Retire.js
-        run: |
-          npm install -g retire
-          retire --outputformat json --outputpath retire-results.json --severity high || true
+#       - name: Upload Retire.js Results
+#         if: always()
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: retirejs-results
+#           path: retire-results.json
 
-      - name: Upload Retire.js Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: retirejs-results
-          path: retire-results.json
+#       - name: SonarQube Scan
+#         uses: sonarsource/sonarqube-scan-action@master
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST}}
+#         with:
+#           args: >
+#             -Dsonar.projectKey=akaunting
+#             -Dsonar.sources=.
+#             -Dsonar.sourceEncoding=UTF-8
+#             -Dsonar.language=php
+#             -Dsonar.php.coverage.reportPaths=coverage.xml
+#             -Dsonar.host.url=${{ secrets.SONAR_HOST}}
+#             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST}}
-        with:
-          args: >
-            -Dsonar.projectKey=akaunting
-            -Dsonar.sources=.
-            -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.language=php
-            -Dsonar.php.coverage.reportPaths=coverage.xml
-            -Dsonar.host.url=${{ secrets.SONAR_HOST}}
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+#       - name: Process Security Reports
+#         if: always()
+#         run: |
+#           mkdir -p security-results
+#           [ -f reports/dependency-check-report.html ] && cp reports/dependency-check-report.html security-results/ || true
+#           [ -f retire-results.json ] && cp retire-results.json security-results/ || true
 
-      - name: Process Security Reports
-        if: always()
-        run: |
-          mkdir -p security-results
-          [ -f reports/dependency-check-report.html ] && cp reports/dependency-check-report.html security-results/ || true
-          [ -f retire-results.json ] && cp retire-results.json security-results/ || true
+#       - name: Upload Combined Security Results
+#         if: always()
+#         uses: actions/upload-artifact@v3
+#         with:
+#           name: security-scan-results
+#           path: security-results/
 
-      - name: Upload Combined Security Results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: security-scan-results
-          path: security-results/
-
-      - name: Check for Critical Vulnerabilities
-        if: always()
-        run: |
-          if [ -f reports/dependency-check-report.html ] && grep -q "Critical" reports/dependency-check-report.html; then
-            echo "Critical vulnerabilities found!"
-            exit 1
-          fi
+#       - name: Check for Critical Vulnerabilities
+#         if: always()
+#         run: |
+#           if [ -f reports/dependency-check-report.html ] && grep -q "Critical" reports/dependency-check-report.html; then
+#             echo "Critical vulnerabilities found!"
+#             exit 1
+#           fi
