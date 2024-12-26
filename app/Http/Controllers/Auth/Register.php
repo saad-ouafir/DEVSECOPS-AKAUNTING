@@ -31,6 +31,12 @@ class Register extends Controller
         $this->middleware('guest');
     }
 
+    /**
+     * Show the registration form for a given token.
+     *
+     * @param string $token
+     * @return \Illuminate\View\View|\Illuminate\Http\Response
+     */
     public function create($token)
     {
         $invitation = UserInvitation::token($token)->first();
@@ -42,30 +48,39 @@ class Register extends Controller
         abort(403);
     }
 
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param \App\Http\Requests\Auth\Register $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
-        $invitation = UserInvitation::token($request->get('token'))->first();
+        // Ensure the registration logic is correctly implemented
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
-        if (!$invitation) {
-            abort(403);
-        }
-
-        $user = $invitation->user;
-
-        $this->dispatch(new DeleteInvitation($invitation));
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => bcrypt($validatedData['password']),
+        ]);
 
         event(new Registered($user));
 
-        if ($response = $this->registered($request, $user)) {
-            return $response;
-        }
+        $this->guard()->login($user);
+
+        return redirect($this->redirectPath());
     }
 
     /**
      * The user has been registered.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
+     * @param \Illuminate\Http\Request $request
+     * @param mixed $user
      * @return mixed
      */
     protected function registered(Request $request, $user)

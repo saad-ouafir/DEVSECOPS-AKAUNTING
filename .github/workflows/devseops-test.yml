@@ -72,7 +72,7 @@ jobs:
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST}}
         with:
           args: >
             -Dsonar.projectKey=akaunting
@@ -80,7 +80,7 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.language=php
             -Dsonar.php.coverage.reportPaths=coverage.xml
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.host.url=${{ secrets.SONAR_HOST}}
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
       - name: Process Security Reports
