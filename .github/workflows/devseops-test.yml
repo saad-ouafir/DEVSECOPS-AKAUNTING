@@ -1,4 +1,4 @@
-name: DevSecOps
+name: DevSecOps Tests
 
 on: [push, pull_request]
 
@@ -19,7 +19,7 @@ jobs:
         run: composer install
 
       - name: OWASP Dependency-Check
-        uses: dependency-check/action@v1
+        uses: jeremylong/gh-dependency-check@v4.0.0
         with:
           project: "Akaunting"
           format: "ALL"
@@ -37,14 +37,7 @@ jobs:
           curl -sSL https://download.sourceclear.com/ci.sh | bash
 
       - name: Retire.js Scan
-        uses: retirejs/retire.js-action@v2
-
-      #   - name: Checkmarx Scan
-      #     uses: checkmarxdev/ast-cli-action@v1
-      #     with:
-      #       api-key:
-      #       project-name: "Akaunting"
-      #       source-location: "."
+        uses: nicojs/retire-action@v2.0.0
 
       - name: Snyk Scan
         uses: snyk/actions@master
