@@ -19,25 +19,34 @@ jobs:
         run: composer install
 
       - name: OWASP Dependency-Check
-        uses: jeremylong/gh-dependency-check@v4.0.0
+        uses: dependency-check/action@v1
         with:
           project: "Akaunting"
           format: "ALL"
           output-directory: "./dependency-check-report"
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+      - name: Analyze with SonarQube
+        uses: SonarSource/sonarqube-scan-action@7295e71c9583053f5bf40e9d4068a0c974603ec8
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST }}
         with:
-          projectBaseDir: .
+          # Additional arguments for the sonarcloud scanner
+          args: -Dsonar.projectKey=saad-ouafir_DEVSECOPS-AKAUNTING
 
       - name: SourceClear Scan
         run: |
           curl -sSL https://download.sourceclear.com/ci.sh | bash
-
       - name: Retire.js Scan
-        uses: nicojs/retire-action@v2.0.0
+        uses: retirejs/retire.js-action@v2
+
+      #   - name: Checkmarx Scan
+      #     uses: checkmarxdev/ast-cli-action@v1
+      #     with:
+      #       api-key:
+      #       project-name: "Akaunting"
+      #       source-location: "."
 
       - name: Snyk Scan
         uses: snyk/actions@master
