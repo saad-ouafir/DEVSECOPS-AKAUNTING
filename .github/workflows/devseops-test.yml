@@ -50,8 +50,8 @@ jobs:
         run: |
           php artisan install \
               --db-name="akaunting" \
-              --db-username="akaunting_user" \
-              --db-password="password" \
+              --db-username="root" \
+              --db-password="root" \
               --admin-email="saad.16ouafir@gmail.com" \
               --admin-password="saad9090"
       - name: install Composer dependencies
